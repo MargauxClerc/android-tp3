@@ -10,7 +10,7 @@
 
     <style name="AppTheme.Text.Label" parent="TextAppearance.AppCompat.Title">
         <!-- Customize your theme here. -->
-        <item name="android:textSize">@dimen/text_label_size</item>
+        <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">true</item>
         <item name="android:textStyle">bold</item>
     </style>
