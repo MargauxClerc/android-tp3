@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">My Application</string>
 
-    <string name="agence_label">Agence</string>
+    <string name="employee_label">Employee</string>
 
     <string name="app_error">Oops something went wrong</string>
 </resources>

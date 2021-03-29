@@ -1,14 +1,16 @@
-package fr.clerc.myapplication.kotlin
+package fr.clerc.tp3.kotlin
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.LinearLayout.VERTICAL
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import fr.clerc.myapplication.R
-import fr.clerc.myapplication.kotlin.model.FeatureCollection
+import fr.clerc.tp3.MainActivity
+import fr.clerc.tp3.R
+import fr.clerc.tp3.kotlin.model.Employees
 import kotlinx.android.synthetic.main.activity_main.*
 import retrofit2.Call
 import retrofit2.Callback
@@ -18,7 +20,7 @@ class MainActivity: AppCompatActivity() {
     lateinit var adapter: RecyclerViewAdapter
 
     companion object {
-        const val FEATURE_NAME: String = "feature_name"
+        const val EMPLOYEE_ID: String = "employee_id"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,30 +33,29 @@ class MainActivity: AppCompatActivity() {
         val itemDecoration = DividerItemDecoration(this, VERTICAL)
         recyclerView.addItemDecoration(itemDecoration)
 
-        adapter = RecyclerViewAdapter(ArrayList()) { feature ->
-            val intent = Intent(this, AgencyDetailsActivity::class.java)
-            intent.putExtra(FEATURE_NAME, feature.properties.name)
+        adapter = RecyclerViewAdapter(ArrayList()) { employee ->
+            val intent = Intent(this, EmployeeDetailsActivity::class.java)
+                .apply {
+                    putExtra(EMPLOYEE_ID, employee.id)
+                }
             startActivity(intent)
         }
 
         recyclerView.adapter = adapter
-
-        fetchMetromobiliteData()
+        fetchEmployeeList()
     }
 
-    private fun fetchMetromobiliteData() {
-        val metroService = RetrofitClient.getInstance().create(MetromobiliteService::class.java)
-        metroService.getAgencyList("agenceM").enqueue(object: Callback<FeatureCollection?>{
-            override fun onFailure(call: Call<FeatureCollection?>?, t: Throwable?) {
+    private fun fetchEmployeeList() {
+        val employeesService = RetrofitClient.retrofit.create(EmployeesService::class.java)
+        employeesService.getEmployeeList().enqueue(object: Callback<Employees?>{
+            override fun onFailure(call: Call<Employees?>, t: Throwable?) {
                 //Manage errors
+                Log.d("MainActivity","${t?.message}")
             }
 
-            override fun onResponse(call: Call<FeatureCollection?>?, response: Response<FeatureCollection?>?) {
-                if (response != null && response.isSuccessful) {
-                    val collection = response.body()
-                    if(collection != null) {
-                        adapter.addFeatureList(collection.featureList)
-                    }
+            override fun onResponse(call: Call<Employees?>, response: Response<Employees?>) {
+                if (response.isSuccessful) {
+                    response.body()?.let { adapter.addEmployee(it.data) }
                 } else {
                     Toast.makeText(applicationContext, getString(R.string.app_error), Toast.LENGTH_LONG).show()
                 }

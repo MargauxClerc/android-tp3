@@ -1,4 +1,4 @@
-package fr.clerc.myapplication;
+package fr.clerc.tp3;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -7,14 +7,16 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import java.util.ArrayList;
 
-import fr.clerc.myapplication.model.Feature;
-import fr.clerc.myapplication.model.FeatureCollection;
+import fr.clerc.tp3.model.Employee;
+import fr.clerc.tp3.model.EmployeeData;
+import fr.clerc.tp3.model.Employees;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -23,7 +25,7 @@ public class MainActivity extends AppCompatActivity {
     RecyclerView recyclerView;
     RecyclerViewAdapter recyclerAdapter;
 
-    public static final String FEATURE_NAME = "feature_name";
+    public static final String EMPLOYEE_ID = "employee_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +44,9 @@ public class MainActivity extends AppCompatActivity {
         //Create adapter with the OnItemClickListener implementation
         recyclerAdapter = new RecyclerViewAdapter(new ArrayList(), new RecyclerViewAdapter.OnItemClickListener() {
             @Override
-            public void onItemClick(View view, Feature feature) {
-                Intent intent = new Intent(getApplicationContext(), AgencyDetailsActivity.class);
-                intent.putExtra(FEATURE_NAME, feature.getProperties().getName());
+            public void onItemClick(View view, EmployeeData employee) {
+                Intent intent = new Intent(getApplicationContext(), EmployeeDetailsActivity.class);
+                intent.putExtra(EMPLOYEE_ID, employee.getId());
                 startActivity(intent);
             }
         });
@@ -52,27 +54,26 @@ public class MainActivity extends AppCompatActivity {
         //Set the adapter
         recyclerView.setAdapter(recyclerAdapter);
 
-        fetchMetromobiliteData();
+        fetchEmployeeData();
     }
 
-    private void fetchMetromobiliteData() {
-        MetromobiliteService metroService = RetrofitClient.getInstance().create(MetromobiliteService.class);
-        metroService.getAgencyList("agenceM").enqueue(new Callback<FeatureCollection>() {
+    private void fetchEmployeeData() {
+        EmployeesService employeesService = RetrofitClient.getInstance().create(EmployeesService.class);
+        employeesService.getEmployeeList().enqueue(new Callback<Employees>() {
 
             @Override
-            public void onResponse(Call<FeatureCollection> call, Response<FeatureCollection> response) {
+            public void onResponse(Call<Employees> call, Response<Employees> response) {
                 if(response.isSuccessful() && response.body() != null) {
-                    //Manage data
-                    FeatureCollection collection = response.body();
-                    recyclerAdapter.addFeatureList(collection.getFeatureList());
+                    recyclerAdapter.addEmployeeList(response.body().getData());
                 } else {
                     Toast.makeText(getApplicationContext(), getString(R.string.app_error), Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
-            public void onFailure(Call<FeatureCollection> call, Throwable t) {
+            public void onFailure(Call<Employees> call, Throwable t) {
                 //Manage errors
+                Log.d("MainActivity",t.getMessage());
             }
         });
     }
